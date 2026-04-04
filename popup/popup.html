@@ -11,23 +11,77 @@
     h1 { font-size: 15px; font-weight: 600; color: #f0ede6; }
     h1 span { font-weight: 400; color: #888780; font-size: 12px; display: block; margin-top: 1px; }
     .section-label { font-size: 10px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: #5f5e5a; margin-bottom: 8px; }
-    .profiles { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 20px; }
-    .profile-btn { padding: 12px 10px; border-radius: 10px; border: 1.5px solid #2c2c2a; background: #1a1a1c; color: #b4b2a9; font-size: 12px; cursor: pointer; text-align: center; transition: all 0.15s; }
+    .profiles { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-bottom: 20px; }
+    .profile-btn {
+      padding: 12px 10px;
+      border-radius: 10px;
+      border: 1.5px solid #2c2c2a;
+      background: #1a1a1c;
+      color: #b4b2a9;
+      font-size: 12px;
+      cursor: pointer;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2px;
+    }
     .profile-btn:hover { border-color: #444441; color: #e8e6df; }
     .profile-btn.active { background: #26215c; border-color: #534ab7; color: #ceebf6; }
-    .profile-btn .icon { font-size: 20px; display: block; margin-bottom: 4px; }
+    .profile-btn .icon { font-size: 20px; display: block; margin-bottom: 2px; }
     .profile-btn .name { font-weight: 600; font-size: 12px; }
-    .profile-btn .desc { font-size: 10px; opacity: 0.7; margin-top: 2px; }
-    .profile-btn[data-profile="adhd"].active { background: #1d2a14; border-color: #3b6d11; color: #c0dd97; }
+    .profile-btn .desc { font-size: 10px; opacity: 0.7; }
+    .profile-btn[data-profile="adhd"].active    { background: #1d2a14; border-color: #3b6d11; color: #c0dd97; }
     .profile-btn[data-profile="dyslexia"].active { background: #2a1a10; border-color: #854f0b; color: #fac775; }
-    .profile-btn[data-profile="visual"].active { background: #1a1a2e; border-color: #185fa5; color: #b5d4f4; }
+    .profile-btn[data-profile="visual"].active   { background: #1a1a2e; border-color: #185fa5; color: #b5d4f4; }
+    .profile-btn[data-profile="sensory"].active  { background: #0d2a1f; border-color: #1d9e75; color: #9fe1cb; }
+    .profile-btn[data-profile="focus"].active    { background: #2a1a2e; border-color: #8b5cf6; color: #d8b4fe; }
+    .profile-btn[data-profile="motor"].active    { background: #2a1f0d; border-color: #b45309; color: #fcd34d; }
     .divider { border: none; border-top: 1px solid #2c2c2a; margin: 16px 0; }
+    .toggle-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 0;
+      border-bottom: 1px solid #1e1e1e;
+    }
+    .toggle-row:last-of-type { border-bottom: none; }
+    .toggle-label { font-size: 12px; color: #b4b2a9; display: flex; flex-direction: column; gap: 2px; }
+    .toggle-label span { font-size: 10px; color: #5f5e5a; }
+    .toggle {
+      position: relative;
+      width: 36px;
+      height: 20px;
+      flex-shrink: 0;
+    }
+    .toggle input { opacity: 0; width: 0; height: 0; }
+    .toggle-slider {
+      position: absolute;
+      inset: 0;
+      background: #2c2c2a;
+      border-radius: 20px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .toggle-slider:before {
+      content: '';
+      position: absolute;
+      width: 14px;
+      height: 14px;
+      left: 3px;
+      top: 3px;
+      background: #888;
+      border-radius: 50%;
+      transition: transform 0.2s, background 0.2s;
+    }
+    .toggle input:checked + .toggle-slider { background: #534ab7; }
+    .toggle input:checked + .toggle-slider:before { transform: translateX(16px); background: #fff; }
     .api-label { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; }
     .api-label a { font-size: 10px; color: #534ab7; text-decoration: none; }
     input[type="password"] { width: 100%; padding: 9px 12px; background: #1a1a1c; border: 1.5px solid #2c2c2a; border-radius: 8px; color: #e8e6df; font-size: 12px; font-family: monospace; outline: none; transition: border-color 0.15s; }
     input[type="password"]:focus { border-color: #534ab7; }
     input[type="password"]::placeholder { color: #444441; }
-    .save-btn { width: 100%; margin-top: 10px; padding: 10px; background: #534ab7; color: #fff; border: none; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; }
+    .save-btn { width: 100%; margin-top: 10px; padding: 10px; background: #534ab7; color: #fff; border: none; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; transition: background 0.15s; }
     .save-btn:hover { background: #6257c9; }
     .status { margin-top: 10px; font-size: 11px; text-align: center; min-height: 16px; color: #3b6d11; }
     .status.error { color: #a32d2d; }
@@ -40,29 +94,81 @@
     <h1>Cognitive Load Optimizer <span>Reload tab after switching profile</span></h1>
   </div>
 
-  <div class="section-label">Cognitive profile</div>
+  <div class="section-label">Cognitive profiles (pick multiple)</div>
   <div class="profiles">
-    <button class="profile-btn" data-profile="none">
-      <span class="icon">⚪</span><span class="name">Off</span><span class="desc">No changes</span>
-    </button>
     <button class="profile-btn" data-profile="adhd">
-      <span class="icon">⚡</span><span class="name">ADHD</span><span class="desc">Summarize + blur ads</span>
+      <span class="icon">⚡</span>
+      <span class="name">ADHD</span>
+      <span class="desc">Summarize + blur ads</span>
     </button>
     <button class="profile-btn" data-profile="dyslexia">
-      <span class="icon">📖</span><span class="name">Dyslexia</span><span class="desc">OpenDyslexic + spacing</span>
+      <span class="icon">📖</span>
+      <span class="name">Dyslexia</span>
+      <span class="desc">OpenDyslexic + spacing</span>
     </button>
     <button class="profile-btn" data-profile="visual">
-      <span class="icon">👁</span><span class="name">Visual</span><span class="desc">High contrast + size</span>
+      <span class="icon">👁</span>
+      <span class="name">Visual</span>
+      <span class="desc">High contrast + size</span>
+    </button>
+    <button class="profile-btn" data-profile="sensory">
+      <span class="icon">🌿</span>
+      <span class="name">Sensory</span>
+      <span class="desc">Calm + no animations</span>
+    </button>
+    <button class="profile-btn" data-profile="focus">
+      <span class="icon">🎯</span>
+      <span class="name">Focus</span>
+      <span class="desc">Hide sidebars + noise</span>
+    </button>
+    <button class="profile-btn" data-profile="motor">
+      <span class="icon">🖱️</span>
+      <span class="name">Motor</span>
+      <span class="desc">Larger click targets</span>
     </button>
   </div>
 
   <hr class="divider">
 
-  <div class="api-label">
-    <div class="section-label" style="margin:0">Anthropic API key</div>
-    <a href="https://console.anthropic.com/keys" target="_blank">Get key →</a>
+  <div class="section-label">Extra tools</div>
+  <div class="toggle-row">
+    <div class="toggle-label">
+      Reading ruler
+      <span>Highlights your current line</span>
+    </div>
+    <label class="toggle">
+      <input type="checkbox" id="toggle-ruler">
+      <span class="toggle-slider"></span>
+    </label>
   </div>
-  <input type="password" id="api-key" placeholder="sk-ant-..." autocomplete="off">
+  <div class="toggle-row">
+    <div class="toggle-label">
+      Summarize on demand
+      <span>Adds a button to each paragraph</span>
+    </div>
+    <label class="toggle">
+      <input type="checkbox" id="toggle-summarize-demand">
+      <span class="toggle-slider"></span>
+    </label>
+  </div>
+  <div class="toggle-row">
+    <div class="toggle-label">
+      Hide images
+      <span>Removes all images from page</span>
+    </div>
+    <label class="toggle">
+      <input type="checkbox" id="toggle-hide-images">
+      <span class="toggle-slider"></span>
+    </label>
+  </div>
+
+  <hr class="divider">
+
+  <div class="api-label">
+    <div class="section-label" style="margin:0">Groq API key</div>
+    <a href="https://console.groq.com" target="_blank">Get key →</a>
+  </div>
+  <input type="password" id="api-key" placeholder="gsk_..." autocomplete="off">
   <button class="save-btn" id="save-btn">Save settings</button>
   <div class="status" id="status"></div>
   <div class="footer">Active on all websites · Data never leaves your browser</div>

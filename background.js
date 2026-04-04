@@ -28,8 +28,7 @@ async function callGroq(text) {
 
   if (!res.ok) return null;
   const data = await res.json();
-  const responseText = data?.choices?.[0]?.message?.content ?? '';
-  return responseText;
+  return data?.choices?.[0]?.message?.content ?? '';
 }
 
 function parseBullets(text) {
@@ -51,12 +50,12 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
   }
 
   if (msg.type === 'GET_PROFILE') {
-    chrome.storage.sync.get(['profile', 'apiKey'], data => sendResponse(data));
+    chrome.storage.sync.get(['profiles', 'apiKey', 'ruler', 'summarizeDemand', 'hideImages'], data => sendResponse(data));
     return true;
   }
 
   if (msg.type === 'SET_PROFILE') {
-    chrome.storage.sync.set({ profile: msg.profile }, () => sendResponse({ ok: true }));
+    chrome.storage.sync.set({ profiles: msg.profiles }, () => sendResponse({ ok: true }));
     return true;
   }
 });

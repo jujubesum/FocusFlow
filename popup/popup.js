@@ -2,32 +2,48 @@ const profileBtns = document.querySelectorAll('.profile-btn');
 const apiInput = document.getElementById('api-key');
 const saveBtn = document.getElementById('save-btn');
 const status = document.getElementById('status');
+const rulerToggle = document.getElementById('toggle-ruler');
+const summarizeDemandToggle = document.getElementById('toggle-summarize-demand');
+const hideImagesToggle = document.getElementById('toggle-hide-images');
 
-chrome.storage.sync.get(['profile', 'apiKey'], ({ profile = 'none', apiKey = '' }) => {
-  setActiveProfile(profile);
+chrome.storage.sync.get(['profiles', 'apiKey', 'ruler', 'summarizeDemand', 'hideImages'], ({
+  profiles = [],
+  apiKey = '',
+  ruler = false,
+  summarizeDemand = false,
+  hideImages = false
+}) => {
+  profiles.forEach(p => {
+    const btn = document.querySelector(`[data-profile="${p}"]`);
+    if (btn) btn.classList.add('active');
+  });
   if (apiKey) apiInput.value = apiKey;
+  rulerToggle.checked = ruler;
+  summarizeDemandToggle.checked = summarizeDemand;
+  hideImagesToggle.checked = hideImages;
 });
 
 profileBtns.forEach(btn => {
-  btn.addEventListener('click', () => setActiveProfile(btn.dataset.profile));
+  btn.addEventListener('click', () => btn.classList.toggle('active'));
 });
 
-function setActiveProfile(profile) {
-  profileBtns.forEach(b => b.classList.toggle('active', b.dataset.profile === profile));
-}
-
-function getActiveProfile() {
-  return document.querySelector('.profile-btn.active')?.dataset.profile ?? 'none';
+function getActiveProfiles() {
+  return Array.from(document.querySelectorAll('.profile-btn.active')).map(b => b.dataset.profile);
 }
 
 saveBtn.addEventListener('click', async () => {
-  const profile = getActiveProfile();
+  const profiles = getActiveProfiles();
   const apiKey = apiInput.value.trim();
-  if (profile !== 'none' && !apiKey) {
-    showStatus('Add your API key to use AI features.', true);
+  const ruler = rulerToggle.checked;
+  const summarizeDemand = summarizeDemandToggle.checked;
+  const hideImages = hideImagesToggle.checked;
+
+  if ((profiles.includes('adhd') || summarizeDemand) && !apiKey) {
+    showStatus('Add your Groq API key to use summarization.', true);
     return;
   }
-  await chrome.storage.sync.set({ profile, apiKey });
+
+  await chrome.storage.sync.set({ profiles, apiKey, ruler, summarizeDemand, hideImages });
   showStatus('Saved! Reload the tab to apply.');
 });
 

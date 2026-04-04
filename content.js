@@ -1,13 +1,22 @@
 (async () => {
-  const { profile } = await chrome.runtime.sendMessage({ type: 'GET_PROFILE' });
-  if (!profile || profile === 'none') return;
+  const { profiles = [], ruler = false, summarizeDemand = false, hideImages = false } =
+    await chrome.runtime.sendMessage({ type: 'GET_PROFILE' });
+
+  const anyActive = profiles.length > 0 || ruler || summarizeDemand || hideImages;
+  if (!anyActive) return;
 
   markFocusableElements();
 
-  if (profile === 'adhd' || profile === 'dyslexia') blurDistractions();
-  if (profile === 'dyslexia') applyDyslexicTypography();
-  if (profile === 'adhd') await summarizeWalls();
-  if (profile === 'visual') applyHighContrast();
+  if (profiles.includes('adhd') || profiles.includes('dyslexia')) blurDistractions();
+  if (profiles.includes('dyslexia')) applyDyslexicTypography();
+  if (profiles.includes('adhd')) await summarizeWalls();
+  if (profiles.includes('visual')) applyHighContrast();
+  if (profiles.includes('sensory')) applySensoryMode();
+  if (profiles.includes('focus')) applyFocusMode();
+  if (profiles.includes('motor')) applyMotorMode();
+  if (ruler) applyReadingRuler();
+  if (hideImages) applyHideImages();
+  if (summarizeDemand) applySummarizeOnDemand();
 
   startFocusMode();
 
@@ -48,13 +57,23 @@
         attempts++;
       }
 
-      const { profile } = await chrome.runtime.sendMessage({ type: 'GET_PROFILE' });
-      if (!profile || profile === 'none') { isProcessing = false; return; }
+      const { profiles = [], ruler = false, summarizeDemand = false, hideImages = false } =
+        await chrome.runtime.sendMessage({ type: 'GET_PROFILE' });
+
+      const anyActive = profiles.length > 0 || ruler || summarizeDemand || hideImages;
+      if (!anyActive) { isProcessing = false; return; }
+
       markFocusableElements();
-      if (profile === 'adhd' || profile === 'dyslexia') blurDistractions();
-      if (profile === 'dyslexia') applyDyslexicTypography();
-      if (profile === 'adhd') await summarizeWalls();
-      if (profile === 'visual') applyHighContrast();
+      if (profiles.includes('adhd') || profiles.includes('dyslexia')) blurDistractions();
+      if (profiles.includes('dyslexia')) applyDyslexicTypography();
+      if (profiles.includes('adhd')) await summarizeWalls();
+      if (profiles.includes('visual')) applyHighContrast();
+      if (profiles.includes('sensory')) applySensoryMode();
+      if (profiles.includes('focus')) applyFocusMode();
+      if (profiles.includes('motor')) applyMotorMode();
+      if (ruler) applyReadingRuler();
+      if (hideImages) applyHideImages();
+      if (summarizeDemand) applySummarizeOnDemand();
       startFocusMode();
       isProcessing = false;
     }
@@ -71,10 +90,8 @@ async function summarizeWalls() {
 
   if (candidates.length === 0) return;
 
-    const texts = candidates.map(el => el.innerText.trim()).join('\n\n').slice(0, 50000);
-    candidates.slice(0, 3).forEach(el => {
-    el.dataset.cloProcessed = '1';
-  });
+  const texts = candidates.map(el => el.innerText.trim()).join('\n\n').slice(0, 50000);
+  candidates.slice(0, 3).forEach(el => { el.dataset.cloProcessed = '1'; });
 
   const target =
     document.querySelector('#mw-content-text') ||
@@ -103,9 +120,102 @@ async function summarizeWalls() {
       <button class="clo-restore-banner">✕ Dismiss</button>
     </div>`;
 
-  banner.querySelector('.clo-restore-banner').addEventListener('click', () => {
-    banner.remove();
+  banner.querySelector('.clo-restore-banner').addEventListener('click', () => banner.remove());
+}
+
+function applySummarizeOnDemand() {
+  document.querySelectorAll('p').forEach(el => {
+    const words = el.innerText.trim().split(/\s+/).length;
+    if (words < 50 || el.dataset.cloHasBtn) return;
+    el.dataset.cloHasBtn = '1';
+
+    const btn = document.createElement('button');
+    btn.className = 'clo-demand-btn';
+    btn.textContent = '✦ Summarize';
+    el.appendChild(btn);
+
+    btn.addEventListener('click', async () => {
+      btn.textContent = '⏳ Summarizing…';
+      btn.disabled = true;
+      const response = await chrome.runtime.sendMessage({ type: 'SUMMARIZE', text: el.innerText });
+      const bullets = response?.bullets ?? ['Could not summarize.'];
+
+      const box = document.createElement('div');
+      box.className = 'clo-demand-result';
+      box.innerHTML = `
+        <ul class="clo-bullets">${bullets.map(b => `<li>${b}</li>`).join('')}</ul>
+        <button class="clo-demand-close">✕ Close</button>
+      `;
+      el.appendChild(box);
+      box.querySelector('.clo-demand-close').addEventListener('click', () => {
+        box.remove();
+        btn.textContent = '✦ Summarize';
+        btn.disabled = false;
+      });
+    });
   });
+}
+
+function applyHideImages() {
+  if (document.getElementById('clo-hide-images-style')) return;
+  const style = document.createElement('style');
+  style.id = 'clo-hide-images-style';
+  style.textContent = `
+    img, picture, figure, video, canvas, svg:not(#clo-ruler svg) {
+      display: none !important;
+    }
+  `;
+  document.head.appendChild(style);
+}
+
+function applyFocusMode() {
+  if (document.getElementById('clo-focus-style')) return;
+  const style = document.createElement('style');
+  style.id = 'clo-focus-style';
+  style.textContent = `
+    header, footer, nav, aside,
+    [class*="sidebar"], [class*="side-bar"],
+    [class*="related"], [class*="recommended"],
+    [class*="comment"], [class*="social"],
+    [class*="newsletter"], [class*="subscribe"],
+    [class*="popup"], [class*="modal"],
+    [class*="cookie"], [class*="banner"],
+    [id*="sidebar"], [id*="comments"],
+    [id*="related"], [id*="footer"] {
+      display: none !important;
+    }
+    body > * { max-width: 100% !important; }
+    article, main, [class*="content"], [class*="article"] {
+      max-width: 740px !important;
+      margin: 0 auto !important;
+      padding: 24px !important;
+    }
+  `;
+  document.head.appendChild(style);
+}
+
+function applyMotorMode() {
+  if (document.getElementById('clo-motor-style')) return;
+  const style = document.createElement('style');
+  style.id = 'clo-motor-style';
+  style.textContent = `
+    a, button, input[type="button"], input[type="submit"],
+    input[type="checkbox"], input[type="radio"], select, label {
+      min-height: 44px !important;
+      min-width: 44px !important;
+      padding: 10px 16px !important;
+      margin: 4px !important;
+      font-size: 1.1em !important;
+      cursor: pointer !important;
+      line-height: 1.5 !important;
+    }
+    a {
+      display: inline-block !important;
+      padding: 4px 6px !important;
+      min-height: unset !important;
+    }
+  `;
+  document.head.appendChild(style);
 }
 
 function blurDistractions() {
@@ -128,7 +238,7 @@ function applyDyslexicTypography() {
   style.textContent = `
     @font-face {
       font-family: 'OpenDyslexic';
-      src: url('${chrome.runtime.getURL('fonts/OpenDyslexic.otf')}') format('opentype');
+      src: url('${chrome.runtime.getURL('fonts/OpenDyslexic-Regular.otf')}') format('opentype');
     }
     body, p, li, td, span, div, article, section, h1, h2, h3, h4, h5, h6 {
       font-family: 'OpenDyslexic', sans-serif !important;
@@ -158,18 +268,65 @@ function applyHighContrast() {
     a, a:visited { color: #7ab8ff !important; }
     a:hover { color: #ffdd57 !important; }
     img { filter: contrast(1.1) brightness(0.85); }
-    table, tr, td, th {
-      background: #111 !important;
-      border-color: #444 !important;
-    }
-    input, textarea, select {
-      background: #222 !important;
-      color: #fff !important;
-      border-color: #555 !important;
-    }
+    table, tr, td, th { background: #111 !important; border-color: #444 !important; }
+    input, textarea, select { background: #222 !important; color: #fff !important; border-color: #555 !important; }
     * { border-color: #333 !important; }
+    #clo-ruler { background: rgba(122, 184, 255, 0.25) !important; border-color: rgba(122, 184, 255, 0.6) !important; }
   `;
   document.head.appendChild(style);
+}
+
+function applySensoryMode() {
+  if (document.getElementById('clo-sensory-style')) return;
+  const style = document.createElement('style');
+  style.id = 'clo-sensory-style';
+  style.textContent = `
+    *, *::before, *::after {
+      animation: none !important;
+      animation-duration: 0s !important;
+      transition: none !important;
+      transition-duration: 0s !important;
+    }
+    body { filter: saturate(0.4) !important; }
+    p, li, td, div { line-height: 1.9 !important; margin-bottom: 0.6em !important; }
+    img[src$=".gif"] { visibility: hidden !important; }
+    [class*="flash"], [class*="blink"], [class*="marquee"] { display: none !important; }
+  `;
+  document.head.appendChild(style);
+
+  document.querySelectorAll('video').forEach(v => { v.pause(); v.autoplay = false; v.muted = true; });
+  document.querySelectorAll('audio').forEach(a => { a.pause(); a.muted = true; });
+
+  new MutationObserver(mutations => {
+    mutations.forEach(m => {
+      m.addedNodes.forEach(node => {
+        if (node.nodeName === 'VIDEO') { node.pause(); node.muted = true; }
+        if (node.nodeName === 'AUDIO') { node.pause(); node.muted = true; }
+      });
+    });
+  }).observe(document.body, { childList: true, subtree: true });
+}
+
+function applyReadingRuler() {
+  if (document.getElementById('clo-ruler')) return;
+  const ruler = document.createElement('div');
+  ruler.id = 'clo-ruler';
+  ruler.style.cssText = `
+    position: fixed;
+    left: 0;
+    width: 100%;
+    height: 2.2em;
+    background: rgba(127, 119, 221, 0.15);
+    border-top: 2px solid rgba(127, 119, 221, 0.4);
+    border-bottom: 2px solid rgba(127, 119, 221, 0.4);
+    pointer-events: none;
+    z-index: 999999;
+    transition: top 0.05s linear;
+  `;
+  document.body.appendChild(ruler);
+  document.addEventListener('mousemove', e => {
+    ruler.style.top = (e.clientY - 16) + 'px';
+  });
 }
 
 function markFocusableElements() {
@@ -192,10 +349,8 @@ function startFocusMode() {
         self.postMessage({ type: 'FOCUS_UPDATE', scrollY: data.scrollY, speed });
       };
     `;
-
     const blob = new Blob([workerCode], { type: 'application/javascript' });
-    const workerURL = URL.createObjectURL(blob);
-    const worker = new Worker(workerURL);
+    const worker = new Worker(URL.createObjectURL(blob));
 
     let ticking = false;
     window.addEventListener('scroll', () => {
@@ -214,10 +369,7 @@ function startFocusMode() {
 
     highlightActiveParagraph(window.scrollY);
   } catch (e) {
-    // fallback — just use scroll event directly without worker
-    window.addEventListener('scroll', () => {
-      highlightActiveParagraph(window.scrollY);
-    });
+    window.addEventListener('scroll', () => highlightActiveParagraph(window.scrollY));
     highlightActiveParagraph(window.scrollY);
   }
 }
