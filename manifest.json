@@ -1,0 +1,29 @@
+{
+  "manifest_version": 3,
+  "name": "Cognitive Load Optimizer",
+  "version": "1.0",
+  "description": "Rebuilds webpages in real-time for ADHD, Dyslexia, and Visual Impairment profiles.",
+  "permissions": ["storage", "activeTab", "scripting"],
+  "host_permissions": ["<all_urls>", "https://api.groq.com/*"],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["content.js"],
+      "css": ["styles/dyslexic.css", "styles/focus.css"],
+      "run_at": "document_idle"
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": ["worker.js", "fonts/OpenDyslexic.otf"],
+      "matches": ["<all_urls>"]
+    }
+  ],
+  "action": {
+    "default_popup": "popup/popup.html",
+    "default_title": "Cognitive Load Optimizer"
+  }
+}
