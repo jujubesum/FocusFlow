@@ -1,0 +1,96 @@
+.clo-loading {
+  padding: 12px 16px;
+  font-style: italic;
+  color: #888;
+  background: #f9f9f9;
+  border-radius: 6px;
+}
+
+.clo-summary-box {
+  border: 1.5px solid #e0d9f5;
+  border-radius: 10px;
+  padding: 14px 18px;
+  background: #f5f3fe;
+  margin: 0 0 16px 0;
+  font-family: -apple-system, sans-serif;
+  position: relative;
+  z-index: 99999;
+  box-sizing: border-box;
+  width: 100%;
+  display: block;
+}
+
+.clo-summary-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.clo-badge {
+  background: #7f77dd;
+  color: #fff;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 2px 8px;
+  border-radius: 20px;
+  white-space: nowrap;
+}
+
+.clo-word-count {
+  font-size: 11px;
+  color: #7f7b74;
+}
+
+.clo-bullets {
+  padding-left: 20px;
+  color: #2c2a3a;
+  line-height: 1.75;
+  font-size: 14px;
+  margin: 0;
+}
+
+.clo-bullets li {
+  margin-bottom: 4px;
+}
+
+.clo-restore {
+  display: inline-block;
+  margin-top: 12px;
+  padding: 5px 12px;
+  background: transparent;
+  border: 1px solid #c5bff0;
+  border-radius: 6px;
+  color: #534ab7;
+  font-size: 11px;
+  cursor: pointer;
+}
+
+.clo-restore:hover { background: #ebe8fc; }
+
+.clo-restore-banner {
+  display: inline-block;
+  margin-top: 12px;
+  padding: 5px 12px;
+  background: transparent;
+  border: 1px solid #c5bff0;
+  border-radius: 6px;
+  color: #534ab7;
+  font-size: 11px;
+  cursor: pointer;
+}
+
+.clo-restore-banner:hover { background: #ebe8fc; }
+
+#clo-page-summary {
+  position: relative;
+  z-index: 99999;
+  width: 100%;
+  box-sizing: border-box;
+  padding: 12px;
+  background: #f5f3fe;
+  border-bottom: 2px solid #e0d9f5;
+  display: block;
+}

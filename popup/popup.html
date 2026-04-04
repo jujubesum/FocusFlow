@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Cognitive Load Optimizer</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; width: 320px; background: #0f0f11; color: #e8e6df; padding: 20px; }
+    .header { display: flex; align-items: center; gap: 10px; margin-bottom: 20px; }
+    .logo { width: 32px; height: 32px; background: linear-gradient(135deg, #7f77dd, #1d9e75); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 16px; }
+    h1 { font-size: 15px; font-weight: 600; color: #f0ede6; }
+    h1 span { font-weight: 400; color: #888780; font-size: 12px; display: block; margin-top: 1px; }
+    .section-label { font-size: 10px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: #5f5e5a; margin-bottom: 8px; }
+    .profiles { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 20px; }
+    .profile-btn { padding: 12px 10px; border-radius: 10px; border: 1.5px solid #2c2c2a; background: #1a1a1c; color: #b4b2a9; font-size: 12px; cursor: pointer; text-align: center; transition: all 0.15s; }
+    .profile-btn:hover { border-color: #444441; color: #e8e6df; }
+    .profile-btn.active { background: #26215c; border-color: #534ab7; color: #ceebf6; }
+    .profile-btn .icon { font-size: 20px; display: block; margin-bottom: 4px; }
+    .profile-btn .name { font-weight: 600; font-size: 12px; }
+    .profile-btn .desc { font-size: 10px; opacity: 0.7; margin-top: 2px; }
+    .profile-btn[data-profile="adhd"].active { background: #1d2a14; border-color: #3b6d11; color: #c0dd97; }
+    .profile-btn[data-profile="dyslexia"].active { background: #2a1a10; border-color: #854f0b; color: #fac775; }
+    .profile-btn[data-profile="visual"].active { background: #1a1a2e; border-color: #185fa5; color: #b5d4f4; }
+    .divider { border: none; border-top: 1px solid #2c2c2a; margin: 16px 0; }
+    .api-label { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; }
+    .api-label a { font-size: 10px; color: #534ab7; text-decoration: none; }
+    input[type="password"] { width: 100%; padding: 9px 12px; background: #1a1a1c; border: 1.5px solid #2c2c2a; border-radius: 8px; color: #e8e6df; font-size: 12px; font-family: monospace; outline: none; transition: border-color 0.15s; }
+    input[type="password"]:focus { border-color: #534ab7; }
+    input[type="password"]::placeholder { color: #444441; }
+    .save-btn { width: 100%; margin-top: 10px; padding: 10px; background: #534ab7; color: #fff; border: none; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; }
+    .save-btn:hover { background: #6257c9; }
+    .status { margin-top: 10px; font-size: 11px; text-align: center; min-height: 16px; color: #3b6d11; }
+    .status.error { color: #a32d2d; }
+    .footer { margin-top: 16px; font-size: 10px; color: #444441; text-align: center; }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <div class="logo">🧠</div>
+    <h1>Cognitive Load Optimizer <span>Reload tab after switching profile</span></h1>
+  </div>
+
+  <div class="section-label">Cognitive profile</div>
+  <div class="profiles">
+    <button class="profile-btn" data-profile="none">
+      <span class="icon">⚪</span><span class="name">Off</span><span class="desc">No changes</span>
+    </button>
+    <button class="profile-btn" data-profile="adhd">
+      <span class="icon">⚡</span><span class="name">ADHD</span><span class="desc">Summarize + blur ads</span>
+    </button>
+    <button class="profile-btn" data-profile="dyslexia">
+      <span class="icon">📖</span><span class="name">Dyslexia</span><span class="desc">OpenDyslexic + spacing</span>
+    </button>
+    <button class="profile-btn" data-profile="visual">
+      <span class="icon">👁</span><span class="name">Visual</span><span class="desc">High contrast + size</span>
+    </button>
+  </div>
+
+  <hr class="divider">
+
+  <div class="api-label">
+    <div class="section-label" style="margin:0">Anthropic API key</div>
+    <a href="https://console.anthropic.com/keys" target="_blank">Get key →</a>
+  </div>
+  <input type="password" id="api-key" placeholder="sk-ant-..." autocomplete="off">
+  <button class="save-btn" id="save-btn">Save settings</button>
+  <div class="status" id="status"></div>
+  <div class="footer">Active on all websites · Data never leaves your browser</div>
+
+  <script src="popup.js"></script>
+</body>
+</html>
