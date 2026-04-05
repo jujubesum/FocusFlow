@@ -5,6 +5,11 @@
   "description": "Rebuilds webpages in real-time for ADHD, Dyslexia, and Visual Impairment profiles.",
   "permissions": ["storage", "activeTab", "scripting", "tabs"],
   "host_permissions": ["<all_urls>", "https://api.groq.com/*"],
+  "icons": {
+    "16": "FocusFlowIcon.png",
+    "48": "FocusFlowIcon.png",
+    "128": "FocusFlowIcon.png"
+  },
   "background": {
     "service_worker": "background.js"
   },
@@ -24,6 +29,11 @@
   ],
   "action": {
     "default_popup": "popup/popup.html",
-    "default_title": "Cognitive Load Optimizer"
+    "default_title": "Cognitive Load Optimizer",
+    "default_icon": {
+      "16": "FocusFlowIcon.png",
+      "48": "FocusFlowIcon.png",
+      "128": "FocusFlowIcon.png"
+    }
   }
 }
