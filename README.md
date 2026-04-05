@@ -139,5 +139,5 @@ The Dyslexia profile requires the OpenDyslexic font file.
 
 ## Built for
 
-🏆 Health Track — Hackathon 2025  
+🏆 Health Track — DiamondHacks 2026  
 *"Making the web accessible for every mind — one profile at a time."*

@@ -1,6 +1,6 @@
 {
   "manifest_version": 3,
-  "name": "Cognitive Load Optimizer",
+  "name": "FocusFlow",
   "version": "1.0",
   "description": "Rebuilds webpages in real-time for ADHD, Dyslexia, and Visual Impairment profiles.",
   "permissions": ["storage", "activeTab", "scripting", "tabs"],
@@ -29,7 +29,7 @@
   ],
   "action": {
     "default_popup": "popup/popup.html",
-    "default_title": "Cognitive Load Optimizer",
+    "default_title": "FocusFlow",
     "default_icon": {
       "16": "FocusFlowIcon.png",
       "48": "FocusFlowIcon.png",
