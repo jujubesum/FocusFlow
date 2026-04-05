@@ -44,7 +44,19 @@ saveBtn.addEventListener('click', async () => {
   }
 
   await chrome.storage.sync.set({ profiles, apiKey, ruler, summarizeDemand, hideImages });
-  showStatus('Saved! Reload the tab to apply.');
+
+  const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+  if (tab?.id) {
+    chrome.tabs.sendMessage(tab.id, {
+      type: 'APPLY_SETTINGS',
+      profiles,
+      ruler,
+      summarizeDemand,
+      hideImages
+    });
+  }
+
+  showStatus('Applied!');
 });
 
 function showStatus(msg, isError = false) {

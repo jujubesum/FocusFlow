@@ -6,7 +6,6 @@
   if (!anyActive) return;
 
   markFocusableElements();
-
   if (profiles.includes('adhd') || profiles.includes('dyslexia')) blurDistractions();
   if (profiles.includes('dyslexia')) applyDyslexicTypography();
   if (profiles.includes('adhd')) await summarizeWalls();
@@ -41,18 +40,14 @@
       let attempts = 0;
       while (attempts < 3) {
         await new Promise(resolve => setTimeout(resolve, 2000));
-
         document.querySelectorAll('[data-clo-processed]').forEach(el => {
           delete el.dataset.cloProcessed;
         });
-
         const old = document.getElementById('clo-page-summary');
         if (old) old.remove();
-
         const candidates = Array.from(
           document.querySelectorAll('p, article, section')
         ).filter(el => el.innerText.trim().split(/\s+/).length >= 50);
-
         if (candidates.length > 0) break;
         attempts++;
       }
@@ -79,6 +74,44 @@
     }
   }, 500);
 })();
+
+chrome.runtime.onMessage.addListener(async (msg) => {
+  if (msg.type !== 'APPLY_SETTINGS') return;
+
+  const { profiles = [], ruler = false, summarizeDemand = false, hideImages = false } = msg;
+
+  ['clo-dyslexic-style', 'clo-contrast-style', 'clo-sensory-style',
+   'clo-focus-style', 'clo-motor-style', 'clo-hide-images-style'].forEach(id => {
+    document.getElementById(id)?.remove();
+  });
+  document.getElementById('clo-ruler')?.remove();
+  document.getElementById('clo-page-summary')?.remove();
+  document.querySelectorAll('.clo-blurred').forEach(el => el.classList.remove('clo-blurred'));
+  document.querySelectorAll('.clo-demand-btn').forEach(el => el.remove());
+  document.querySelectorAll('[data-clo-has-btn]').forEach(el => delete el.dataset.cloHasBtn);
+  document.querySelectorAll('.clo-focus-dimmed').forEach(el => {
+    el.classList.remove('clo-focus-dimmed');
+    el.style.removeProperty('opacity');
+    el.style.removeProperty('pointer-events');
+    el.style.removeProperty('transition');
+  });
+  document.body.style.removeProperty('filter');
+
+  markFocusableElements();
+  if (profiles.includes('adhd') || profiles.includes('dyslexia')) blurDistractions();
+  if (profiles.includes('dyslexia')) applyDyslexicTypography();
+  if (profiles.includes('adhd')) await summarizeWalls();
+  if (profiles.includes('visual')) applyHighContrast();
+  if (profiles.includes('sensory')) applySensoryMode();
+  if (profiles.includes('focus')) applyFocusMode();
+  if (profiles.includes('motor')) applyMotorMode();
+  if (ruler) applyReadingRuler();
+  if (hideImages) applyHideImages();
+  if (summarizeDemand) {
+    await new Promise(resolve => setTimeout(resolve, 300));
+    applySummarizeOnDemand();
+  }
+});
 
 async function summarizeWalls() {
   const candidates = Array.from(
@@ -161,7 +194,7 @@ function applyHideImages() {
   const style = document.createElement('style');
   style.id = 'clo-hide-images-style';
   style.textContent = `
-    img, picture, figure, video, canvas, svg:not(#clo-ruler svg) {
+    img, picture, figure, video, canvas {
       display: none !important;
     }
   `;
@@ -173,25 +206,23 @@ function applyFocusMode() {
   const style = document.createElement('style');
   style.id = 'clo-focus-style';
   style.textContent = `
-    header, footer, nav, aside,
-    [class*="sidebar"], [class*="side-bar"],
-    [class*="related"], [class*="recommended"],
-    [class*="comment"], [class*="social"],
-    [class*="newsletter"], [class*="subscribe"],
-    [class*="popup"], [class*="modal"],
-    [class*="cookie"], [class*="banner"],
-    [id*="sidebar"], [id*="comments"],
-    [id*="related"], [id*="footer"] {
-      display: none !important;
+    .clo-focus-dimmed {
+      opacity: 0.6 !important;
+      pointer-events: none !important;
     }
-    body > * { max-width: 100% !important; }
-    article, main, [class*="content"], [class*="article"] {
-      max-width: 740px !important;
-      margin: 0 auto !important;
-      padding: 24px !important;
+    .clo-focus-dimmed:hover {
+      opacity: 1 !important;
+      pointer-events: auto !important;
     }
   `;
   document.head.appendChild(style);
+
+  document.querySelectorAll(
+    'header, footer, nav, aside, [class*="sidebar"], [id*="sidebar"], [class*="related"], [id*="related"], [class*="recommended"], [class*="comment"], [class*="newsletter"], [class*="subscribe"], [id*="comments"], [id*="footer"]'
+  ).forEach(el => {
+    el.classList.add('clo-focus-dimmed');
+    el.dataset.cloWasDimmed = '1';
+  });
 }
 
 function applyMotorMode() {
@@ -199,20 +230,24 @@ function applyMotorMode() {
   const style = document.createElement('style');
   style.id = 'clo-motor-style';
   style.textContent = `
-    a, button, input[type="button"], input[type="submit"],
-    input[type="checkbox"], input[type="radio"], select, label {
+    button, input[type="button"], input[type="submit"] {
       min-height: 44px !important;
       min-width: 44px !important;
-      padding: 10px 16px !important;
-      margin: 4px !important;
-      font-size: 1.1em !important;
+      font-size: 1.05em !important;
       cursor: pointer !important;
-      line-height: 1.5 !important;
+    }
+    input[type="checkbox"], input[type="radio"] {
+      width: 20px !important;
+      height: 20px !important;
+      cursor: pointer !important;
+    }
+    select {
+      min-height: 40px !important;
+      font-size: 1.05em !important;
     }
     a {
-      display: inline-block !important;
-      padding: 4px 6px !important;
-      min-height: unset !important;
+      padding: 2px 4px !important;
+      line-height: 1.8 !important;
     }
   `;
   document.head.appendChild(style);
@@ -256,21 +291,30 @@ function applyHighContrast() {
   const style = document.createElement('style');
   style.id = 'clo-contrast-style';
   style.textContent = `
-    html, body, div, section, article, main, header, footer, aside, nav {
-      background: #000 !important;
-      background-color: #000 !important;
-    }
-    p, li, td, th, span, div, article, section, h1, h2, h3, h4, h5, h6, label, caption {
+    html, body {
+      background: #111 !important;
       color: #fff !important;
-      font-size: 1.05em !important;
+    }
+    body * {
+      background-color: #111 !important;
+      color: #fff !important;
+    }
+    img, video, canvas, svg, picture {
+      background-color: transparent !important;
+      filter: contrast(1.1) brightness(0.85);
+    }
+    [style*="background-image"] {
+      background-color: transparent !important;
+    }
+    a, a:visited {
+      color: #7ab8ff !important;
+      font-size: 1.15em !important;
+    }
+    a:hover { color: #ffdd57 !important; }
+    p, li, td, th, span, h1, h2, h3, h4, h5, h6, label, caption {
+      font-size: 1.15em !important;
       line-height: 1.8 !important;
     }
-    a, a:visited { color: #7ab8ff !important; }
-    a:hover { color: #ffdd57 !important; }
-    img { filter: contrast(1.1) brightness(0.85); }
-    table, tr, td, th { background: #111 !important; border-color: #444 !important; }
-    input, textarea, select { background: #222 !important; color: #fff !important; border-color: #555 !important; }
-    * { border-color: #333 !important; }
     #clo-ruler { background: rgba(122, 184, 255, 0.25) !important; border-color: rgba(122, 184, 255, 0.6) !important; }
   `;
   document.head.appendChild(style);
