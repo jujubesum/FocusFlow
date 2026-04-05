@@ -1,3 +1,5 @@
+Created by Emi Yee and Jennifer Ju @ University of California San Diego DiamondHacks Hackathon 2026
+
 # 🧠 Cognitive Load Optimizer
 
 A Chrome extension that rebuilds any webpage in real-time to match your cognitive profile. Supports ADHD, Dyslexia, Visual Impairment, Sensory, Focus, and Motor profiles — combinable, instantly applied, and free to use.
