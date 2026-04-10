@@ -95,9 +95,18 @@ chrome.runtime.onMessage.addListener(async (msg) => {
     el.style.removeProperty('pointer-events');
     el.style.removeProperty('transition');
   });
+  
+  document.querySelectorAll('.clo-focusable').forEach(el => {
+    el.classList.remove('clo-focusable');
+  });
+  document.querySelectorAll('.clo-active-para').forEach(el => {
+    el.classList.remove('clo-active-para');
+  });
   document.body.style.removeProperty('filter');
 
-  markFocusableElements();
+  if (profiles.length > 0 || ruler || summarizeDemand || hideImages) {
+    markFocusableElements();
+  } 
   if (profiles.includes('adhd') || profiles.includes('dyslexia')) blurDistractions();
   if (profiles.includes('dyslexia')) applyDyslexicTypography();
   if (profiles.includes('adhd')) await summarizeWalls();
